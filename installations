@@ -1,0 +1,18 @@
+sudo apt update
+sudo apt install -y fontconfig openjdk-17-jre
+
+sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y jenkins
+
+docker run -d --name sonar -p 9000:9000 sonarqube:lts-community
+sonarqube default username and password is --> admin
+
+how to integrate sonarqube with jenkins ????
+sonar page --> Administration --> Users --> generate a token
+create global credentials with secrete text and paste sonar token at secrete
+manage jenkins --> system configuration --> below SonarQube installations fill specified fields
