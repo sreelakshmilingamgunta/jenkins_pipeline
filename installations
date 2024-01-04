@@ -11,12 +11,24 @@ sudo apt-get install -y jenkins
 
 docker run -d --name sonar -p 9000:9000 sonarqube:lts-community
 sonarqube default username and password is --> admin
-
+-------------------------------------------
 how to integrate sonarqube with jenkins ????
 
 sonar page --> Administration --> Users --> generate a token
 create global credentials with secrete text and paste sonar token at secrete
 manage jenkins --> system configuration --> below SonarQube installations fill specified fields
 for integrating sonarqube jdk version should be above 17
+withSonarQubeEnv(credentialsId: 'sonar-token') {
+    // some block
+}
+-----------------------------------------
+How to integrate email with jenkins ???
+
+install 'Email Extension template' pluggin
+add credentials with username and password in password type 'application id'
+manage jenkins --> system configuration --> Extended Email notification 
+default smtp port 25, 465, 587
+email notification --> Advanced --> use smtp Athentication --> give username(email address) and app id as a password
+give tick to SSL
 
 
