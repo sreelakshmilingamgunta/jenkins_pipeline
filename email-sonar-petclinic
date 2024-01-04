@@ -1,0 +1,66 @@
+
+pipeline {
+    agent any
+
+    tools {
+        
+        maven 'Maven'
+    }
+
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
+    }
+
+    stages {
+        stage('git checkout') {
+            steps {
+                script {
+                    git branch: 'main', url: 'https://github.com/sreelakshmilingamgunta/Petclinic.git'
+                }
+            }
+        }
+
+        stage('sonarqube analysis') {
+            steps {
+                script {
+                    withSonarQubeEnv(credentialsId: 'sonar-token', installationName: 'sonar-scanner') {
+                        sh """
+                            ${SCANNER_HOME}/bin/sonar-scanner \
+                            -Dsonar.projectName=petclinic \
+                            -Dsonar.projectKey=petclinic \
+                            -Dsonar.java.binaries=target/classes
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('maven compile') {
+            steps {
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('maven test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('maven build') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+    }
+    post{
+        always{
+            script{
+                emailext subject: "Pipeline ${currentBuild.result}: ${currentBuild.fullDisplayName}",
+                     body: "The pipeline ${currentBuild.fullDisplayName} has ${currentBuild.result}. Please check the Jenkins console output for details.",
+                     to: "sreelakshmilingamgunta@gmail.com,alavalapatisree2014@gmail.com,swathiendla21@gmail.com,,rameshkurumalla1@gmail.com",
+                     attachLog: true
+            }
+        }
+    }
+}
