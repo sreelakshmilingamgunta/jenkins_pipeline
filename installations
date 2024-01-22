@@ -31,4 +31,128 @@ default smtp port 25, 465, 587
 email notification --> Advanced --> use smtp Athentication --> give username(email address) and app id as a password
 give tick to SSL
 
+-----------------------------
+
+INSTALLATION OF JENKINS ON VM
+sudo yum install epel-release -y
+sudo yum install java-11-openjdk -y -- JAVA prereqisites
+sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo --no-check-certificate
+sudo rpm --import http://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+sudo yum install jenkins -y
+Edit /lib/systemd/system/jenkins.service file and change Jenkins port to 8090 by updating Environment="JENKINS_PORT=" variable value.
+sudo vi /lib/systemd/system/jenkins.service
+It should look like this:
+Environment="JENKINS_PORT=8090"
+Once done start Jenkins service.
+sudo systemctl restart jenkins
+
+
+INSTALLATION OF JAVA
+sudo apt update
+sudo apt install fontconfig openjdk-17-jre
+java -version
+openjdk version "17.0.8" 2023-07-18
+OpenJDK Runtime Environment (build 17.0.8+7-Debian-1deb12u1)
+OpenJDK 64-Bit Server VM (build 17.0.8+7-Debian-1deb12u1, mixed mode, sharing)
+
+
+
+
+Long Term Support release
+A LTS (Long-Term Support) release is chosen every 12 weeks from the stream of regular releases as the stable release for that time period. It can be installed from the debian-stable apt repository.
+
+sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update
+sudo apt-get install jenkins
+Weekly release
+A new release is produced weekly to deliver bug fixes and features to users and plugin developers. It can be installed from the debian apt repository.
+
+Beginning with Jenkins 2.335 and Jenkins 2.332.1, the package is configured with systemd rather than the older System V init. See the DigitalOcean community systemd tutorial to better understand the benefits of systemd and the systemctl command.
+
+The package installation will:
+
+Setup Jenkins as a daemon launched on start. Run systemctl cat jenkins for more details.
+
+Create a ‘jenkins’ user to run this service.
+
+Direct console log output to systemd-journald. Run journalctl -u jenkins.service if you are troubleshooting Jenkins.
+
+Populate /lib/systemd/system/jenkins.service with configuration parameters for the launch, e.g JENKINS_HOME
+
+Set Jenkins to listen on port 8080. Access this port with your browser to start configuration.
+
+If Jenkins fails to start because a port is in use, run systemctl edit jenkins and add the following:
+
+[Service]
+Environment="JENKINS_PORT=8081"
+Here, "8081" was chosen but you can put another port available.
+
+Installation of Java
+Jenkins requires Java to run, yet not all Linux distributions include Java by default. Additionally, not all Java versions are compatible with Jenkins.
+
+There are multiple Java implementations which you can use. OpenJDK is the most popular one at the moment, we will use it in this guide.
+
+Update the Debian apt repositories, install OpenJDK 17, and check the installation with the commands:
+
+sudo apt update
+sudo apt install fontconfig openjdk-17-jre
+java -version
+openjdk version "17.0.8" 2023-07-18
+OpenJDK Runtime Environment (build 17.0.8+7-Debian-1deb12u1)
+OpenJDK 64-Bit Server VM (build 17.0.8+7-Debian-1deb12u1, mixed mode, sharing)
+
+INTERACTING JENKINS THROUGH CLI:
+ 1.firstly install jenkins-cli.jar  by runnning -- wget http://ipaddress:8080/jnlpJars/jenkins-cli.jar
+ 2. authentication of jenkins using ---java -jar jenkins-cli.jar -s http://ipaddress:8080/  -auth username:apitoken (username>mange>api token)
+3. list of all jobs in jenkins -- java -jar jenkins-cli.jar -s http://ipadress:8080/  -auth username:apitoken (username>mange>api token) -webSocket list-jobs
+4.build the job -- java -jar jenkins-cli.jar -s http://ipaddress:8080/  -auth username:apitoken (username>mange>api token) -webSocket build <job name> (ex:test1)
+5.get the job details - java -jar jenkins-cli.jar -s http://ipaddress:8080/  -auth username:apitoken (username>mange>api token) get-job <job name> 
+                                     or
+                        java -jar jenkins-cli.jar get-job <job name> (when "export JENKINS_URL=http://jenkins-server/";
+"java -jar jenkins-cli.jar command arguments"
+6.to create a new job -- java -jar jenkins-cli.jar -s http://ipaddress:8080/  -auth username:apitoken (username>mange>api token) create-job <jobname> < config.xml
+    config.xml (is a xml file ) want to create 
+    a sample config.xml content given below
+"<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders/>
+  <publishers/>
+  <buildWrappers/>
+</project>"
+ 7. to delete the job -- java -jar jenkins-cli.jar -s http://ipaddress:8080/  -auth username:apitoken (username>mange>api token) delete-job <job name>
+ 8. to retrive information about specific build number -- java -jar jenkins-cli.jar -s http://ipaddress:8080/  -auth username:apitoken (username>mange>api token) 
+                                                            get-build job-name buildnumber
+9.Stops a currently running build. - java -jar jenkins-cli.jar -s http://ipaddress:8080/  -auth username:apitoken (username>mange>api token) stop-build job_name build_number
+10.Deletes a user from Jenkins.-java -jar jenkins-cli.jar -s http://ipaddress:8080/  -auth username:apitoken (username>mange>api token) delete-user username
+11.list-slaves:
+
+Lists all configured slaves/agents in Jenkins.--- java -jar jenkins-cli.jar -s http://ipaddress:8080/  -auth username:apitoken (username>mange>api token) list-slaves
+12.online-node / offline-node:
+Sets a node online or offline.
+java -jar jenkins-cli.jar -s http://ipaddress:8080/  -auth username:apitoken (username>mange>api token) online-node node_name
+java -jar jenkins-cli.jar  -s http://ipaddress:8080/  -auth username:apitoken (username>mange>api token) offline-node node_name
+13.connect-node:
+Connects a node to Jenkins. --- java -jar jenkins-cli.jar  -s http://ipaddress:8080/  -auth username:apitoken (username>mange>api token) connect-node node_name
+
+
+CONNECTING OVER ssh :
+ssh -i /home/mike/.ssh/jenkins_key -l mike -p 8022 jenkins-server help
+-i flag is used to point to mike's private SSH key. Remember, we have already added the public key in the Jenkins configuration.
+-l is the login user which in our example is mike
+-p is the port which we found out in the previous step to be 8022
+
 
